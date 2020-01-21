@@ -1,0 +1,6 @@
+Window(id="wow", title="My Program") {
+	VBox {
+		Button(text="Press Me!", onClick=clicked)
+		Label(text="This is my label")
+	}
+}

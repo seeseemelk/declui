@@ -1,7 +1,14 @@
 module declui;
 
-import declui.parser;
-import declui.elements.window;
+public
+{
+	import declui.components;
+	import declui.core;
+}
+
+/*import declui.parser;
+//import declui.elements.window;
+import declui.components.window;
 import gio.Application : GioApplication = Application;
 import gtk.Application;
 import std.string;
@@ -60,7 +67,7 @@ string document(string filename)()
 	}
 	return attributes;
 }*/
-
+/*
 class AppData
 {
 	Application application;
@@ -135,12 +142,12 @@ private:
 	{
 		enum var = "el";
 		enum type = content.matches[0];
-		
+
 		mixin(`
 		import declui.elements.` ~ type.toLower() ~ `;
 		auto ` ~ var ~ ` = new ` ~ type ~ `(appdata);
 		`);
-		
+
 		static foreach (child; content.children[0].children)
 		{
 			static if (child.name == "DUI.AttributeList")
@@ -191,3 +198,4 @@ void runGUI(string[] args, RunnableDocument document)
 	});
 	appdata.application.run(args);
 }
+*/

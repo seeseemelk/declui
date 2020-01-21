@@ -1,0 +1,2 @@
+name "helloworld"
+dependency "declui" version="*"

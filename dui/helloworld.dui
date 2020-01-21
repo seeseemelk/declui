@@ -1,9 +1,0 @@
-Window(id="wow", title="My Program") {
-	/*Menu(text="File") {
-		MenuButton(text="Quit")
-	}*/
-	VBox {
-		Button(text="Press Me!", onClick=clicked)
-		Label(text="This is my label")
-	}
-}

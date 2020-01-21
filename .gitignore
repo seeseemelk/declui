@@ -14,3 +14,4 @@ declui-test-*
 *.obj
 *.lst
 *.a
+bak/

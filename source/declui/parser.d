@@ -4,19 +4,60 @@ Contains the pegged grammar to parse a DUI file.
 module declui.parser;
 
 import pegged.grammar;
+import std.format;
+import std.algorithm;
+import std.array;
+import std.range;
 
-mixin(grammar(`
+/**
+Parses a DUI script.
+Params:
+content = The content of the script.
+*/
+Tag parseDUIScript(string content)()
+{
+	const input = DUI(content).children[0];
+	static assert(input.successful, input.failMsg);
+
+	Tag tag = Tag(input.matches[0]);
+
+	// Parse attributes
+	//if (input.children.length >= 1 && input.children[0].name == "DUI")
+	const descriptor = input.children[0];
+	if (descriptor.children.length > 0 && descriptor.children[0].name == "DUI.AttributeList")
+	{
+		foreach (child; descriptor.children[0].children)
+		{
+			tag.attributes ~= Attribute(child.children[0].matches[0], child.children[1].matches[0]);
+		}
+	}
+	return tag;
+}
+
+/**
+Imports and parses a DUI script.
+Param:
+content = The content of the script.
+*/
+Tag parseDUI(string file)()
+{
+	return parseDUIScript!(import(file ~ ".dui"));
+}
+
+
+private mixin(grammar(`
 DUI:
 	# Base types
-	Element       <  Descriptor | Descriptor :'{' Element* :'}'
+	Element       <  Descriptor / Descriptor :'{' Element* :'}'
 	Descriptor    <  identifier ('#' identifier)? ( :'(' AttributeList :')' )?
 	AttributeList <  (Attribute :','?)*
-	Attribute     <  identifier :'=' Value
+	Attribute     <  Identifier :'=' Value
 
 	# Value types
+	Identifier    <  identifier
 	Value         <  String / Callback / Number / Bool
-	String        <~ doublequote (!doublequote Char)* doublequote
-	Char          <~ 
+	String        <~ :doublequote (!doublequote Char)* :doublequote
+	Char          <~
 	              / backslash (
 					/ doublequote
 					/ quote
@@ -35,10 +76,89 @@ DUI:
 	Callback      <  identifier
 `));
 
+
+/**
+A tag in a DUI file.
+*/
+struct Tag
+{
+	/// The name of the tag.
+	string name;
+
+	/// All attributes of a tag.
+	//Attribute[string] attributes;
+	Attribute[] attributes;
+
+	/// All children of a tag.
+	Tag[] children;
+
+	/// Gets an attribute by its name.
+	Attribute opIndex(string name) const pure
+	{
+		foreach (Attribute attribute; attributes)
+		{
+			if (attribute.name == name)
+				return attribute;
+		}
+		assert(0, "no such element " ~ name);
+	}
+
+	string toString(string indentation = "") const pure
+	{
+		return format!"%s%s%s%s\n"(indentation, name, attributesToString(), childrenToString(indentation));
+	}
+
+	private string attributesToString() const pure
+	{
+		if (attributes.length == 0)
+			return " ()";
+
+		return " (" ~ attributes
+			.map!(attribute => format!`%s="%s"`(attribute.name, attribute.value))
+			.join(", ") ~ ")";
+	}
+
+	private string childrenToString(string indents) const pure
+	{
+		if (children.length == 0)
+			return " {}";
+
+		return " {\n" ~ children
+			.map!(tag => tag.toString(indents ~ "    "))
+			.join() ~ indents ~ "}";
+	}
+}
+
+/**
+A attribute of a tag.
+It contains an iddentifier and a value.
+*/
+struct Attribute
+{
+	/// The name of the attribute.
+	string name;
+
+	/// The value of the attribute.
+	string value;
+
+	string toString() const pure
+	{
+		return format!`%s="%s"`(name, value);
+	}
+}
+
+@("Can parse the name of an element")
 unittest
 {
-	import std.stdio : writeln;
+	const dui = parseDUIScript!"tagname {}";
+	assert(dui.name == "tagname");
+}
 
-	string input = "anIdentifier { anotherIdentifier#name (attr=\"wow\",id=myId) }";
-	assert(DUI(input).successful);
+@("Can parse attributes of an element")
+unittest
+{
+	const dui = parseDUIScript!`tagname (foo="bar", foo2="bar2")`;
+	assert(dui.attributes.length == 2);
+	assert(dui.attributes[0] == Attribute("foo", "bar"));
+	assert(dui.attributes[1] == Attribute("foo2", "bar2"));
 }
