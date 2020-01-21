@@ -7,27 +7,21 @@ import gtk.Label;
 /**
 A GTK label
 */
-class GtkLabel : GtkComponent, ILabel
+class GtkLabel : GtkComponent!Label, ILabel
 {
-	private Label _label;
-
-	this()
+	override Label createInstance()
 	{
-		_label = new Label("");
-	}
-
-	override Label getWidget()
-	{
-		return _label;
+		return new Label("");
 	}
 
 	override string text()
 	{
-		return _label.getText();
+		assert(0);
+		//return _label.getText();
 	}
 
 	override void text(string text)
 	{
-		_label.setText(text);
+		queueSetter(label => label.setText(text));
 	}
 }

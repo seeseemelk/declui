@@ -1,11 +1,12 @@
 module declui.components.window;
 
 import declui.components.component;
+import declui.components.container;
 
 /**
 Represents a graphical window.
 */
-interface IWindow : IComponent
+interface IWindow : IComponent, IContainer
 {
 	/// Gets the current title of the window.
 	string title();

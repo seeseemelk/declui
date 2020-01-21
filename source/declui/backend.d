@@ -6,7 +6,7 @@ import declui.components;
 The backend for a given UI toolkit.
 It is used to create compoonents and to enter the main event loop.
 */
-interface ComponentBackend
+interface ToolkitBackend
 {
 	/// Enters the main event loop for the backend.
 	void run(string[] args, IWindow window);
@@ -18,12 +18,20 @@ interface ComponentBackend
 	ILabel label();
 }
 
-private static ComponentBackend _backend = null;
+private static ToolkitBackend _backend = null;
+
 /// Gets the backend used to create compoonents.
-ComponentBackend dui()
+ToolkitBackend dui()
+{
+	if (_backend is null)
+	{
+		_backend = createBackend();
+	}
+	return _backend;
+}
+
+private auto createBackend()
 {
 	import declgtk.backend : GtkBackend;
-	if (_backend is null)
-		_backend = new GtkBackend;
-	return _backend;
+	return new GtkBackend;
 }

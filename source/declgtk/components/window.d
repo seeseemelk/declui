@@ -1,33 +1,45 @@
 module declgtk.components.window;
 
 import declgtk.components.component;
+import declui.components.component;
 import declui.components.window : IWindow;
+import gtk.Application : Application;
 import gtk.Window;
+import gtk.ApplicationWindow : ApplicationWindow;
 
 /**
 A GTK window.
 */
-class GtkWindow : GtkComponent, IWindow
+class GtkWindow : GtkComponent!Window, IWindow
 {
-	private Window _window;
+	private Application _application;
 
-	this()
+	override Window createInstance()
 	{
-		_window = new Window("untitled");
+		if (_application is null)
+			return new Window("Untitled");
+		else
+			return new ApplicationWindow(_application);
 	}
 
-	override Window getWidget()
+	void setApplication(Application application)
 	{
-		return _window;
+		_application = application;
 	}
 
 	override string title()
 	{
-		return _window.getTitle();
+		assert(0);
+		//return getWidget().getTitle();
 	}
 
 	override void title(string title)
 	{
-		_window.setTitle(title);
+		queueSetter(window => window.setTitle(title));
+	}
+
+	override void add(IComponent child)
+	{
+		assert(0);
 	}
 }

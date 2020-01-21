@@ -1,6 +1,5 @@
 module app;
-import declui.components.component;
-import declui.backend;
+import declui;
 
 private class EmptyWindow : Component!"emptywindow"
 {

@@ -3,18 +3,46 @@ module declgtk.backend;
 import declgtk.components;
 import declui.backend;
 import declui.components.window;
-import gio.Application;
+import gio.Application : GioApplication = Application;
+import gtk.Application : Application, GApplicationFlags;
+import gtk.ApplicationWindow : ApplicationWindow;
+
+import std.exception;
+
+private static bool _started = false;
+
+/**
+Determines whether or not GTK has already been started.
+Returns: `true` if GTK was started, `false` if it has not yet been started.
+*/
+bool isGTKStarted()
+{
+	return _started;
+}
 
 /**
 Creates GTK components.
 */
-class GtkBackend : ComponentBackend
+class GtkBackend : ToolkitBackend
 {
 	private Application _application;
 
 	override void run(string[] args, IWindow window)
 	{
+		GtkWindow gtkWindow = cast(GtkWindow) window.getInternal();
+		assert(gtkWindow !is null, "window is not a GtkWindow");
+
 		_application = new Application("dlang.decluiApplication", GApplicationFlags.FLAGS_NONE);
+		_application.addOnActivate((gioApp)
+		{
+			gtkWindow.setApplication(_application);
+			gtkWindow.visible = true;
+			gtkWindow.initialise();
+		});
+		_application.addOnStartup((gioApp)
+		{
+			//window.onStartup();
+		});
 		_application.run(args);
 	}
 
