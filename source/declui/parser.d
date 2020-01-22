@@ -16,22 +16,9 @@ content = The content of the script.
 */
 Tag parseDUIScript(string content)()
 {
-	const input = DUI(content).children[0];
-	static assert(input.successful, input.failMsg);
-
-	Tag tag = Tag(input.matches[0]);
-
-	// Parse attributes
-	//if (input.children.length >= 1 && input.children[0].name == "DUI")
-	const descriptor = input.children[0];
-	if (descriptor.children.length > 0 && descriptor.children[0].name == "DUI.AttributeList")
-	{
-		foreach (child; descriptor.children[0].children)
-		{
-			tag.attributes ~= Attribute(child.children[0].matches[0], child.children[1].matches[0]);
-		}
-	}
-	return tag;
+	const tree = DUI(content).children[0];
+	static assert(tree.successful, tree.failMsg);
+	return tree.parseTreeAsTag();
 }
 
 /**
@@ -44,11 +31,34 @@ Tag parseDUI(string file)()
 	return parseDUIScript!(import(file ~ ".dui"));
 }
 
+private Tag parseTreeAsTag(const ParseTree tree)
+{
+	Tag tag = Tag(tree.matches[0]);
+
+	// Parse attributes
+	const descriptor = tree.children[0];
+	if (descriptor.children.length > 0 && descriptor.children[0].name == "DUI.AttributeList")
+	{
+		foreach (child; descriptor.children[0].children)
+		{
+			tag.attributes ~= Attribute(child.children[0].matches[0], child.children[1].matches[0]);
+		}
+	}
+
+	// Parse children
+	foreach (childTree; tree.children)
+	{
+		if (childTree.name == "DUI.Element")
+			tag.children ~= childTree.parseTreeAsTag();
+	}
+
+	return tag;
+}
 
 private mixin(grammar(`
 DUI:
 	# Base types
-	Element       <  Descriptor / Descriptor :'{' Element* :'}'
+	Element       <  Descriptor :'{' Element* :'}' / Descriptor
 	Descriptor    <  identifier ('#' identifier)? ( :'(' AttributeList :')' )?
 	AttributeList <  (Attribute :','?)*
 	Attribute     <  Identifier :'=' Value
@@ -161,4 +171,13 @@ unittest
 	assert(dui.attributes.length == 2);
 	assert(dui.attributes[0] == Attribute("foo", "bar"));
 	assert(dui.attributes[1] == Attribute("foo2", "bar2"));
+}
+
+@("Can parse children of an element")
+unittest
+{
+	const dui = parseDUIScript!`parent (id="cool") { childA childB}`;
+	assert(dui.children.length == 2, "Number of children is incorrect.");
+	assert(dui.children[0].name == "childA", "Name of first child is incorrect");
+	assert(dui.children[1].name == "childB", "Name of second child is incorrect");
 }

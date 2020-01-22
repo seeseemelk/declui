@@ -1,7 +1,4 @@
 window(id="wow", title="My Program") {
-	button(text="Press Me!")
-	/*vbox {
-		button(text="Press Me!", onClick=clicked)
-		label(text="This is my label")
-	}*/
+	button (text="Press Me!")
+	label (text="Cool")
 }

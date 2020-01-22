@@ -9,19 +9,21 @@ A GTK label
 */
 class GtkLabel : GtkComponent!Label, ILabel
 {
+	private string _text = "Untitled Label";
+
 	override Label createInstance()
 	{
-		return new Label("");
+		return new Label(_text);
 	}
 
 	override string text()
 	{
-		assert(0);
-		//return _label.getText();
+		return _text;
 	}
 
 	override void text(string text)
 	{
-		queueSetter(label => label.setText(text));
+		_text = text;
+		queue(widget => widget.setText(text));
 	}
 }

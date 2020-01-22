@@ -1,38 +1,36 @@
 module declgtk.components.component;
 
 import declgtk.componentproxy;
+import declgtk.queue;
 import declui.components.component;
 import gtk.Widget;
 
-alias Setter(T) = void delegate(T);
+/**
+An interface that defines some basic methods that can be used without requiring
+instantiation the underlying template.
+*/
+interface IGtkComponent
+{
+	Widget getWidget();
+}
 
 /**
 A Component with a GTK backend.
 */
-abstract class GtkComponent(Type) : IComponent
+abstract class GtkComponent(Type) : IGtkComponent, IComponent
 {
 	private Type _widget;
-	private Setter!Type[] _setterCallbacks;
 
 	/// Initialises the component.
-	void initialise()
+	final void initialise()
 	{
 		_widget = createInstance();
-		executeSetters();
-	}
-
-	/// Executes all queued setters.
-	void executeSetters()
-	{
-		const queued = _setterCallbacks;
-		_setterCallbacks = [];
-
-		foreach (callback; queued)
-			callback(_widget);
+		_visible = true;
+		_widget.show();
 	}
 
 	/// Returns the internal widget.
-	Type getWidget()
+	override final Type getWidget()
 	{
 		if (_widget is null)
 			initialise();
@@ -41,9 +39,12 @@ abstract class GtkComponent(Type) : IComponent
 	}
 
 	/// Queues a setter to be executed.
-	protected void queueSetter(Setter!Type callback)
+	protected void queue(void delegate(Type) callback)
 	{
-		_setterCallbacks ~= callback;
+		queueOnGtk(
+		{
+				callback(getWidget);
+		});
 	}
 
 	/// Creates and returns an new instance of this type.
@@ -54,11 +55,20 @@ abstract class GtkComponent(Type) : IComponent
 		return this;
 	}
 
+	/*
+	Methods common for all Gtk Widgets
+	*/
 	private bool _visible = false;
 	override void visible(bool visible)
 	{
 		_visible = visible;
-		queueSetter(widget => widget.setVisible(visible));
+		queue((widget)
+		{
+			if (_visible)
+				widget.show();
+			else
+				widget.hide();
+		});
 	}
 
 	override bool visible()

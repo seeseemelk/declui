@@ -16,6 +16,9 @@ interface ToolkitBackend
 
 	/// Creates a label.
 	ILabel label();
+
+	/// Creates a button.
+	IButton button();
 }
 
 private static ToolkitBackend _backend = null;

@@ -1,8 +1,6 @@
 module declui.components.label;
 
-import declui.backend;
 import declui.components.component;
-import declui.parser;
 
 /**
 A piece of text.

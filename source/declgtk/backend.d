@@ -1,6 +1,7 @@
 module declgtk.backend;
 
 import declgtk.components;
+import declgtk.queue;
 import declui.backend;
 import declui.components.window;
 import gio.Application : GioApplication = Application;
@@ -26,6 +27,13 @@ Creates GTK components.
 class GtkBackend : ToolkitBackend
 {
 	private Application _application;
+	private void delegate()[] callbacks;
+
+	/// Queues a callback to be run on the GTK event loop.
+	void queue(void delegate() callback)
+	{
+		callbacks ~= callback;
+	}
 
 	override void run(string[] args, IWindow window)
 	{
@@ -37,11 +45,7 @@ class GtkBackend : ToolkitBackend
 		{
 			gtkWindow.setApplication(_application);
 			gtkWindow.visible = true;
-			gtkWindow.initialise();
-		});
-		_application.addOnStartup((gioApp)
-		{
-			//window.onStartup();
+			executeGtkQueue();
 		});
 		_application.run(args);
 	}
@@ -54,5 +58,10 @@ class GtkBackend : ToolkitBackend
 	override GtkLabel label()
 	{
 		return new GtkLabel;
+	}
+
+	override GtkButton button()
+	{
+		return new GtkButton;
 	}
 }
