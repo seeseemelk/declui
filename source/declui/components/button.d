@@ -12,4 +12,10 @@ interface IButton : IComponent
 
     /// Sets the text displayed on the button.
     void text(string text);
+
+	/// Gets the callback that is executed when the button is pressed.
+	void delegate() click();
+
+	/// Sets the callback that is executed when the button is pressed.
+	void click(void delegate() callback);
 }

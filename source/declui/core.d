@@ -14,6 +14,17 @@ import std.format;
 import std.conv;
 
 /**
+An interface that provides methods for every callback that is in tag.
+*/
+interface EventHandler(Tag tag)
+{
+	static foreach (callback; tag.findCallbacks)
+	{
+		mixin(format!"void %s();"(callback));
+	}
+}
+
+/**
 This class will create a component from a Tag tree.
 */
 class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend, tag.name))
@@ -52,6 +63,9 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
         }
 	}
 
+	/*
+	Auto-generated getters and setters.
+	*/
 	static foreach (memberName; __traits(allMembers, Type))
 	{
 		static foreach (member; __traits(getOverloads, Type, memberName))
@@ -80,22 +94,8 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
 	}
 
 	/*
-	Here are normal, non-compile-time constructs that are common to every
-	component.
+	Auto-generated event handlers
 	*/
-	/*private string _id;
-
-	/// Returns the ID of the component.
-	public string id()
-	{
-		return _id;
-	}
-
-	/// Sets the ID of the component.
-	public void id(string id)
-	{
-		_id = id;
-	}*/
 }
 
 /**

@@ -10,10 +10,16 @@ A GTK button
 class GtkButton : GtkComponent!Button, IButton
 {
 	private string _text = "Untitled Label";
+	private void delegate() _clicked;
 
 	override Button createInstance()
 	{
-		return new Button(_text);
+		auto button = new Button(_text);
+		button.addOnClicked(
+		{
+			_clicked();
+		});
+		return button;
 	}
 
 	override string text()
@@ -25,5 +31,15 @@ class GtkButton : GtkComponent!Button, IButton
 	{
 		_text = text;
 		queue(widget => widget.setLabel(text));
+	}
+
+	override void delegate() click()
+	{
+		return _clicked;
+	}
+
+	override void click(void delegate() clicked)
+	{
+		_clicked = clicked;
 	}
 }

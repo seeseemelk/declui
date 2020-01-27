@@ -8,11 +8,12 @@ import std.format;
 import std.algorithm;
 import std.array;
 import std.range;
+import std.uni;
 
 /**
 Parses a DUI script.
 Params:
-content = The content of the script.
+  content = The content of the script.
 */
 Tag parseDUIScript(string content)()
 {
@@ -24,14 +25,44 @@ Tag parseDUIScript(string content)()
 /**
 Imports and parses a DUI script.
 Param:
-content = The content of the script.
+  content = The content of the script.
 */
-Tag parseDUI(string file)()
+Tag parseDUI(string file)() pure
 {
 	return parseDUIScript!(import(file ~ ".dui"));
 }
 
-private Tag parseTreeAsTag(const ParseTree tree)
+/**
+Finds all callbacks in for a given tag.
+Param:
+  tag = The tag that should be searched for callbacks.
+Returns: A list of the name of each callback.
+This list will not contain any dupliates.
+*/
+string[] findCallbacks(const Tag tag) pure
+{
+	return findAllCallbacks(tag)
+		.dup
+		.sort
+		.uniq
+		.array;
+}
+
+private const(string[]) findAllCallbacks(const Tag tag) pure
+{
+	auto callbacks = tag.attributes
+		.filter!(attribute => attribute.type == AttributeType.callback)
+		.map!(attribute => attribute.value)
+		.array();
+
+	foreach (child; tag.children)
+	{
+		callbacks ~= findAllCallbacks(child);
+	}
+	return callbacks;
+}
+
+private Tag parseTreeAsTag(const ParseTree tree) pure
 {
 	Tag tag = Tag(tree.matches[0]);
 
@@ -41,7 +72,9 @@ private Tag parseTreeAsTag(const ParseTree tree)
 	{
 		foreach (child; descriptor.children[0].children)
 		{
-			tag.attributes ~= Attribute(child.children[0].matches[0], child.children[1].matches[0]);
+			auto value = child.children[1];
+
+			tag.attributes ~= Attribute(child.children[0].matches[0], value.matches[0], value.attributeTypeOf());
 		}
 	}
 
@@ -55,6 +88,23 @@ private Tag parseTreeAsTag(const ParseTree tree)
 	return tag;
 }
 
+private AttributeType attributeTypeOf(const ParseTree tree) pure
+{
+	switch (tree.name)
+	{
+		case "DUI.String":
+			return AttributeType.string;
+		case "DUI.Callback":
+			return AttributeType.callback;
+		case "DUI.Integer":
+			return AttributeType.integer;
+		case "DUI.Bool":
+			return AttributeType.boolean;
+		default:
+			assert(0, "Unknown ParseTree type " ~ tree.name);
+	}
+}
+
 private mixin(grammar(`
 DUI:
 	# Base types
@@ -65,7 +115,7 @@ DUI:
 
 	# Value types
 	Identifier    <  identifier
-	Value         <  String / Callback / Number / Bool
+	Value         <  String / Callback / Integer / Bool
 	String        <~ :doublequote (!doublequote Char)* :doublequote
 	Char          <~
 	              / backslash (
@@ -81,8 +131,8 @@ DUI:
 					)
 	              / .
 	Bool          <- "true" / "false"
-	Number        <- [0-9]+
-	Hex           <- [0-9a-fA-F]+
+	Integer       <- [0-9]+
+	Hex           <- '0x' [0-9a-fA-F]+
 	Callback      <  identifier
 `));
 
@@ -151,10 +201,24 @@ struct Attribute
 	/// The value of the attribute.
 	string value;
 
+	/// The type of the attribute.
+	AttributeType type;
+
 	string toString() const pure
 	{
 		return format!`%s="%s"`(name, value);
 	}
+}
+
+/**
+An enumeration of all possible types of attribute.
+*/
+enum AttributeType
+{
+	string,
+	integer,
+	callback,
+	boolean
 }
 
 @("Can parse the name of an element")
@@ -169,8 +233,9 @@ unittest
 {
 	const dui = parseDUIScript!`tagname (foo="bar", foo2="bar2")`;
 	assert(dui.attributes.length == 2);
-	assert(dui.attributes[0] == Attribute("foo", "bar"));
-	assert(dui.attributes[1] == Attribute("foo2", "bar2"));
+	assert(dui.attributes[0] == Attribute("foo", "bar", AttributeType.string));
+	assert(dui.attributes[1] == Attribute("foo2", "bar2", AttributeType.string));
+	assert(dui.attributes["foo"] == Attribute("foo", "bar", AttributeType.string));
 }
 
 @("Can parse children of an element")
