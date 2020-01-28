@@ -13,16 +13,13 @@ import std.traits;
 import std.format;
 import std.conv;
 
-/**
-An interface that provides methods for every callback that is in tag.
-*/
-interface EventHandler(Tag tag)
+/*private interface EventHandler(Tag tag)
 {
 	static foreach (callback; tag.findCallbacks)
 	{
 		mixin(format!"void %s();"(callback));
 	}
-}
+}*/
 
 /**
 This class will create a component from a Tag tree.
@@ -40,25 +37,34 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
     /**
     Creates the component and all child components.
     */
-	this()
+	this(EventHandler)(EventHandler eventHandler)
 	{
 		_instance = __traits(getMember, dui, tag.name)();
         static foreach (attribute; tag.attributes)
         {
             static if (attribute.name != "id")
             {
-                __traits(getMember, _instance, attribute.name)(attribute.value);
+				static if (attribute.type == AttributeType.string)
+					__traits(getMember, _instance, attribute.name)(attribute.value);
+				else static if (attribute.type == AttributeType.boolean)
+					__traits(getMember, _instance, attribute.name)(attribute.value.parse!bool);
+				else static if (attribute.type == AttributeType.integer)
+					__traits(getMember, _instance, attribute.name)(attribute.value.parse!int);
+				else static if (attribute.type == AttributeType.callback)
+					__traits(getMember, _instance, attribute.name)(&__traits(getMember, eventHandler, attribute.value));
+				else
+					static assert(0, "Unsupported type " ~ attribute.type);
             }
         }
 
         static if (tag.children.length > 0)
         {
-            static assert(isAssignable!(IContainer, typeof(_instance)), text("A component of type '",
+            /*static assert(isAssignable!(IContainer, typeof(_instance)), text("A component of type '",
 					typeof(_instance).stringof,
-					"' cannot have child components"));
+					"' cannot have child components"));*/
 			static foreach (child; tag.children)
 			{
-				_instance.add(new ComponentFromTag!child);
+				_instance.add(new ComponentFromTag!child(eventHandler));
 			}
         }
 	}
@@ -106,20 +112,34 @@ Type Params:
   file = The name of the DUI file. This file should be present in the views
          directory and end with the `.dui` extension.
 */
-class Component(string file) : ComponentFromTag!(parseDUI!file)
+abstract class Component(string file) : ComponentFromTag!(parseDUI!file)
 {
+	private enum tag = parseDUI!file;
+
+	/// Instantiates a DUI file.
+	this()
+	{
+		super(this);
+	}
+
+	static foreach (callback; tag.findCallbacks)
+	{
+		mixin(format!"abstract void %s();"(callback));
+	}
 }
 
 @("IContainer can have children")
 unittest
 {
 	enum tag = Tag("window", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
-	assert(__traits(compiles, ComponentFromTag!tag), "Failed to compile Component");
+	static struct EventHandler {}
+	assert(__traits(compiles, new ComponentFromTag!tag(EventHandler())), "Failed to compile Component");
 }
 
 @("Non-IContainers cannot have children")
 unittest
 {
 	enum tag = Tag("label", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
-	assert(!__traits(compiles, ComponentFromTag!tag), "Did compile Component, but shouldn't have");
+	static struct EventHandler {}
+	assert(!__traits(compiles, new ComponentFromTag!tag(EventHandler())), "Did compile Component, but shouldn't have");
 }

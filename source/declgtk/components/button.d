@@ -15,7 +15,7 @@ class GtkButton : GtkComponent!Button, IButton
 	override Button createInstance()
 	{
 		auto button = new Button(_text);
-		button.addOnClicked(
+		button.addOnClicked((button)
 		{
 			_clicked();
 		});

@@ -27,7 +27,7 @@ Imports and parses a DUI script.
 Param:
   content = The content of the script.
 */
-Tag parseDUI(string file)() pure
+Tag parseDUI(string file)()
 {
 	return parseDUIScript!(import(file ~ ".dui"));
 }
@@ -39,7 +39,7 @@ Param:
 Returns: A list of the name of each callback.
 This list will not contain any dupliates.
 */
-string[] findCallbacks(const Tag tag) pure
+string[] findCallbacks(const Tag tag)
 {
 	return findAllCallbacks(tag)
 		.dup
@@ -48,7 +48,7 @@ string[] findCallbacks(const Tag tag) pure
 		.array;
 }
 
-private const(string[]) findAllCallbacks(const Tag tag) pure
+private const(string[]) findAllCallbacks(const Tag tag)
 {
 	auto callbacks = tag.attributes
 		.filter!(attribute => attribute.type == AttributeType.callback)
@@ -62,7 +62,7 @@ private const(string[]) findAllCallbacks(const Tag tag) pure
 	return callbacks;
 }
 
-private Tag parseTreeAsTag(const ParseTree tree) pure
+private Tag parseTreeAsTag(const ParseTree tree)
 {
 	Tag tag = Tag(tree.matches[0]);
 
@@ -88,8 +88,10 @@ private Tag parseTreeAsTag(const ParseTree tree) pure
 	return tag;
 }
 
-private AttributeType attributeTypeOf(const ParseTree tree) pure
+private AttributeType attributeTypeOf(const ParseTree tree)
 {
+	if (tree.name == "DUI.Value")
+		return attributeTypeOf(tree.children[0]);
 	switch (tree.name)
 	{
 		case "DUI.String":
@@ -153,7 +155,7 @@ struct Tag
 	Tag[] children;
 
 	/// Gets an attribute by its name.
-	Attribute opIndex(string name) const pure
+	Attribute opIndex(string name) const pure @safe
 	{
 		foreach (Attribute attribute; attributes)
 		{
@@ -235,7 +237,7 @@ unittest
 	assert(dui.attributes.length == 2);
 	assert(dui.attributes[0] == Attribute("foo", "bar", AttributeType.string));
 	assert(dui.attributes[1] == Attribute("foo2", "bar2", AttributeType.string));
-	assert(dui.attributes["foo"] == Attribute("foo", "bar", AttributeType.string));
+	assert(dui["foo"] == Attribute("foo", "bar", AttributeType.string));
 }
 
 @("Can parse children of an element")
