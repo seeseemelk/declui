@@ -33,8 +33,19 @@ ToolkitBackend dui()
 	return _backend;
 }
 
-private auto createBackend()
+version (unittest)
 {
-	import declgtk.backend : GtkBackend;
-	return new GtkBackend;
+	private ToolkitBackend createBackend()
+	{
+		import declui.testing : TestingBackend;
+		return new TestingBackend;
+	}
+}
+else
+{
+	private ToolkitBackend createBackend()
+	{
+		import declgtk.backend : GtkBackend;
+		return new GtkBackend;
+	}
 }
