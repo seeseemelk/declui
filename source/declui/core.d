@@ -13,13 +13,15 @@ import std.traits;
 import std.format;
 import std.conv;
 
-/*private interface EventHandler(Tag tag)
+private template symbolOfTag(Tag tag)
 {
-	static foreach (callback; tag.findCallbacks)
-	{
-		mixin(format!"void %s();"(callback));
-	}
-}*/
+	alias symbolOfTag = __traits(getMember, dui, tag.name);
+}
+
+private template typeOfTag(Tag tag)
+{
+	alias typeOfTag = ReturnType!(symbolOfTag!tag);
+}
 
 /**
 This class will create a component from a Tag tree.
@@ -34,6 +36,41 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
 
 	private Type _instance;
 
+	private struct IdContainer
+	{
+		static foreach (tagged; tag.findIds)
+		{
+			mixin(format!`private %s _%s;`(
+				fullyQualifiedName!(typeOfTag!tagged),
+				tagged.id
+			));
+
+			mixin(format!
+				`private void %s(%s value)
+				{
+					_%s = value;
+				}`(
+				tagged.id,
+				fullyQualifiedName!(typeOfTag!tagged),
+				tagged.id
+			));
+
+			mixin(format!
+				`auto %s()
+				{
+					return _%s;
+				}`(
+				tagged.id,
+				tagged.id
+			));
+		}
+	}
+
+	/**
+	A struct containing a reference to all children by their id.
+	*/
+	IdContainer byId;
+
     /**
     Creates the component and all child components.
     */
@@ -42,31 +79,34 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
 		_instance = __traits(getMember, dui, tag.name)();
         static foreach (attribute; tag.attributes)
         {
-            static if (attribute.name != "id")
-            {
-				static if (attribute.type == AttributeType.string)
-					__traits(getMember, _instance, attribute.name)(attribute.value);
-				else static if (attribute.type == AttributeType.boolean)
-					__traits(getMember, _instance, attribute.name)(attribute.value.parse!bool);
-				else static if (attribute.type == AttributeType.integer)
-					__traits(getMember, _instance, attribute.name)(attribute.value.parse!int);
-				else static if (attribute.type == AttributeType.callback)
-					__traits(getMember, _instance, attribute.name)(&__traits(getMember, eventHandler, attribute.value));
-				else
-					static assert(0, "Unsupported type " ~ attribute.type);
-            }
+			static if (attribute.type == AttributeType.string)
+				__traits(getMember, _instance, attribute.name)(attribute.value);
+			else static if (attribute.type == AttributeType.boolean)
+				__traits(getMember, _instance, attribute.name)(attribute.value.parse!bool);
+			else static if (attribute.type == AttributeType.integer)
+				__traits(getMember, _instance, attribute.name)(attribute.value.parse!int);
+			else static if (attribute.type == AttributeType.callback)
+				__traits(getMember, _instance, attribute.name)(&__traits(getMember, eventHandler, attribute.value));
+			else
+				static assert(0, "Unsupported type " ~ attribute.type);
         }
 
         static if (tag.children.length > 0)
         {
-            /*static assert(isAssignable!(IContainer, typeof(_instance)), text("A component of type '",
-					typeof(_instance).stringof,
-					"' cannot have child components"));*/
 			static foreach (child; tag.children)
 			{
-				_instance.add(new ComponentFromTag!child(eventHandler));
+				registerChild!(child)(new ComponentFromTag!(child)(eventHandler));
 			}
         }
+	}
+
+	private void registerChild(Tag tag, C)(C component)
+	{
+		_instance.add(component);
+		static if (tag.id.length > 0)
+		{
+			__traits(getMember, byId, tag.id) = component;
+		}
 	}
 
 	/*
@@ -98,10 +138,6 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
 			}
 		}
 	}
-
-	/*
-	Auto-generated event handlers
-	*/
 }
 
 /**
@@ -131,15 +167,15 @@ abstract class Component(string file) : ComponentFromTag!(parseDUI!file)
 @("IContainer can have children")
 unittest
 {
-	enum tag = Tag("window", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
+	enum tag = Tag("window", "", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
 	static struct EventHandler {}
-	assert(__traits(compiles, new ComponentFromTag!tag(EventHandler())), "Failed to compile Component");
+	new ComponentFromTag!(tag)(EventHandler());
 }
 
 @("Non-IContainers cannot have children")
 unittest
 {
-	enum tag = Tag("label", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
+	enum tag = Tag("label", "", [], [Tag("label")]); // @suppress(dscanner.suspicious.unused_variable)
 	static struct EventHandler {}
 	assert(!__traits(compiles, new ComponentFromTag!tag(EventHandler())), "Did compile Component, but shouldn't have");
 }

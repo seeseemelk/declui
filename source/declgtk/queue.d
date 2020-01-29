@@ -18,7 +18,9 @@ Executes all GTK callbacks.
 */
 void executeGtkQueue()
 {
-	foreach (callback; callbacks)
+	auto oldCallbacks = callbacks;
+	callbacks = [];
+	foreach (callback; oldCallbacks)
 	{
 		callback();
 	}

@@ -62,18 +62,41 @@ private const(string[]) findAllCallbacks(const Tag tag)
 	return callbacks;
 }
 
+/**
+Gets a list of all tags with a given id.
+Param:
+  tag = The tag that should be searched for ids.
+Returns: A list of the id of this and every child tag.
+This list will not contain any duplicated.
+*/
+inout(Tag)[] findIds(inout Tag tag)
+{
+	inout(Tag)[] callbacks;
+
+	if (tag.id != "")
+		callbacks = [tag];
+	foreach (child; tag.children)
+		callbacks ~= findIds(child);
+	return callbacks;
+}
+
 private Tag parseTreeAsTag(const ParseTree tree)
 {
 	Tag tag = Tag(tree.matches[0]);
+	const descriptor = tree.children[0];
+
+	// Parse id
+	if (descriptor.hasChildTree("DUI.Id"))
+	{
+		tag.id = descriptor.findChildTree("DUI.Id").matches[0];
+	}
 
 	// Parse attributes
-	const descriptor = tree.children[0];
-	if (descriptor.children.length > 0 && descriptor.children[0].name == "DUI.AttributeList")
+	if (descriptor.hasChildTree("DUI.AttributeList"))
 	{
-		foreach (child; descriptor.children[0].children)
+		foreach (child; descriptor.findChildTree("DUI.AttributeList").children)
 		{
 			auto value = child.children[1];
-
 			tag.attributes ~= Attribute(child.children[0].matches[0], value.matches[0], value.attributeTypeOf());
 		}
 	}
@@ -107,11 +130,32 @@ private AttributeType attributeTypeOf(const ParseTree tree)
 	}
 }
 
+private inout(ParseTree) findChildTree(inout(ParseTree) parent, const string childName)
+{
+	foreach (child; parent.children)
+	{
+		if (child.name == childName)
+			return child;
+	}
+	assert(0, "Could not find child tree");
+}
+
+private bool hasChildTree(const ParseTree parent, const string childName)
+{
+	foreach (child; parent.children)
+	{
+		if (child.name == childName)
+			return true;
+	}
+	return false;
+}
+
 private mixin(grammar(`
 DUI:
 	# Base types
 	Element       <  Descriptor :'{' Element* :'}' / Descriptor
-	Descriptor    <  identifier ('#' identifier)? ( :'(' AttributeList :')' )?
+	Descriptor    <  identifier ('#' Id)? ( :'(' AttributeList :')' )?
+	Id            <  identifier
 	AttributeList <  (Attribute :','?)*
 	Attribute     <  Identifier :'=' Value
 
@@ -146,6 +190,10 @@ struct Tag
 {
 	/// The name of the tag.
 	string name;
+
+	/// The id of the tag.
+	/// This is an empty string of the tag has no id.
+	string id;
 
 	/// All attributes of a tag.
 	//Attribute[string] attributes;
@@ -247,4 +295,19 @@ unittest
 	assert(dui.children.length == 2, "Number of children is incorrect.");
 	assert(dui.children[0].name == "childA", "Name of first child is incorrect");
 	assert(dui.children[1].name == "childB", "Name of second child is incorrect");
+}
+
+@("Can parse id of an element")
+unittest
+{
+	const dui = parseDUIScript!`foo#bar()`;
+	assert(dui.id == "bar", "Did not parse id of element");
+}
+
+@("Can parse id of a child element")
+unittest
+{
+	const dui = parseDUIScript!`parent { foo1#bar1 foo2#bar2 }`;
+	assert(dui.children[0].id == "bar1", "Did not parse id of child element");
+	assert(dui.children[1].id == "bar2", "Did not parse id of child element");
 }

@@ -1,4 +1,0 @@
-window(id="wow", title="My Program") {
-	button (text="Press Me!", click=clicked)
-	label (text="Cool")
-}

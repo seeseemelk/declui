@@ -1,6 +1,7 @@
 module declgtk.components.button;
 
 import declgtk.components.component;
+import declgtk.queue;
 import declui.components.button : IButton;
 import gtk.Button;
 
@@ -18,6 +19,7 @@ class GtkButton : GtkComponent!Button, IButton
 		button.addOnClicked((button)
 		{
 			_clicked();
+			executeGtkQueue();
 		});
 		return button;
 	}
