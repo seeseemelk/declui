@@ -12,3 +12,5 @@ public
 	import declui.backend;
 	import declui.core;
 }
+
+import declgtk.backend;

@@ -1,0 +1,12 @@
+name "common"
+description "Core components for Declui"
+authors "Sebastiaan de Schaetzen"
+copyright "Copyright © 2019, Sebastiaan de Schaetzen"
+license "MIT"
+targetType "library"
+
+dependency "pegged" version="~>0.4.4"
+
+configuration "unittest" {
+        dependency "silly" version="~>1.0.1"
+}

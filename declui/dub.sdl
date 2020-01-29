@@ -1,0 +1,9 @@
+name "declui"
+description "A UI library that supports multiple backends and parses DUI files at compile time"
+authors "Sebastiaan de Schaetzen"
+copyright "Copyright © 2019, Sebastiaan de Schaetzen"
+license "MIT"
+targetType "library"
+
+dependency "declui:common" version="*"
+dependency "declui:declgtk" version="*"

@@ -65,3 +65,8 @@ class GtkBackend : ToolkitBackend
 		return new GtkButton;
 	}
 }
+
+shared static this()
+{
+	registerToolkit("gtk", () => new GtkBackend);
+}
