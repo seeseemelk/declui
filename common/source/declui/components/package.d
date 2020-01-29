@@ -1,3 +1,6 @@
+/**
+All components
+*/
 module declui.components;
 
 public

@@ -1,3 +1,6 @@
+/**
+The base for all components.
+*/
 module declui.components.component;
 
 /**

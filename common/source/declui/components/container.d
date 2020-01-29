@@ -1,3 +1,6 @@
+/**
+Describes any component that can have child components.
+*/
 module declui.components.container;
 
 import declui.components.component;

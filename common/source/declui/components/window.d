@@ -1,3 +1,6 @@
+/**
+A window component.
+*/
 module declui.components.window;
 
 import declui.components.component;

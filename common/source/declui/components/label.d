@@ -1,3 +1,6 @@
+/**
+A label component that can display some text.
+*/
 module declui.components.label;
 
 import declui.components.component;

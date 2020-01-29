@@ -1,3 +1,6 @@
+/**
+A clickable button component.
+*/
 module declui.components.button;
 
 import declui.components.component;
