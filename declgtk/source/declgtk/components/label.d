@@ -1,13 +1,13 @@
 module declgtk.components.label;
 
 import declgtk.components.component;
-import declui.components.label : ILabel;
+import declui.components.label;
 import gtk.Label;
 
 /**
 A GTK label
 */
-class GtkLabel : GtkComponent!Label, ILabel
+class GtkLabel : GtkWidgetComponent!Label, ILabel
 {
 	private string _text = "Untitled Label";
 

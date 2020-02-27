@@ -1,5 +1,5 @@
 window (title="Counter") {
 	label#count (text="Count: 0")
-	button (text="Increase", click=clickedIncrease)
-	button (text="Decrease", click=clickedDecrease)
+	button (text="Increase", onClick=clickedIncrease)
+	button (text="Decrease", onClick=clickedDecrease)
 }

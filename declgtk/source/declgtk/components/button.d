@@ -2,23 +2,23 @@ module declgtk.components.button;
 
 import declgtk.components.component;
 import declgtk.queue;
-import declui.components.button : IButton;
+import declui.components.button;
 import gtk.Button;
 
 /**
 A GTK button
 */
-class GtkButton : GtkComponent!Button, IButton
+class GtkButton : GtkWidgetComponent!Button, IButton
 {
 	private string _text = "Untitled Label";
-	private void delegate() _clicked;
+	private void delegate() _onClick;
 
 	override Button createInstance()
 	{
 		auto button = new Button(_text);
 		button.addOnClicked((button)
 		{
-			_clicked();
+			_onClick();
 			executeGtkQueue();
 		});
 		return button;
@@ -35,13 +35,13 @@ class GtkButton : GtkComponent!Button, IButton
 		queue(widget => widget.setLabel(text));
 	}
 
-	override void delegate() click()
+	override void delegate() onClick()
 	{
-		return _clicked;
+		return _onClick;
 	}
 
-	override void click(void delegate() clicked)
+	override void onClick(void delegate() clicked)
 	{
-		_clicked = clicked;
+		_onClick = clicked;
 	}
 }

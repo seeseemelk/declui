@@ -1,0 +1,8 @@
+window (title="Menu Example") {
+	menubar {
+		menu (text="File") {
+			menubutton (text="Quit", onClick=pressed)
+		}
+	}
+	label#label (text="")
+}

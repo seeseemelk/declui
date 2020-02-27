@@ -1,6 +1,5 @@
 module declgtk.components.component;
 
-import declgtk.componentproxy;
 import declgtk.queue;
 import declui.components.component;
 import gtk.Widget;
@@ -9,15 +8,62 @@ import gtk.Widget;
 An interface that defines some basic methods that can be used without requiring
 instantiation the underlying template.
 */
-interface IGtkComponent
+interface IGtkWidgetComponent
 {
 	Widget getWidget();
+}
+
+abstract class GtkComponent(Type): IComponent
+{
+	private Type _widget;
+
+	/// Initialises the component.
+	final void initialise()
+	{
+		_widget = createInstance();
+	}
+
+	/// Returns the internal widget.
+	final Type getWidget()
+	{
+		if (_widget is null)
+			initialise();
+		assert(_widget !is null, "Widget was not correctly created");
+		return _widget;
+	}
+
+	/// Queues a setter to be executed.
+	protected void queue(void delegate(Type) callback)
+	{
+		queueOnGtk(
+		{
+				callback(getWidget);
+		});
+	}
+
+	/// Creates and returns an new instance of this type.
+	protected abstract Type createInstance();
+
+	override IComponent getInternal()
+	{
+		return this;
+	}
+
+	override bool visible()
+	{
+		return true;
+	}
+
+	override void visible(bool)
+	{
+
+	}
 }
 
 /**
 A Component with a GTK backend.
 */
-abstract class GtkComponent(Type) : IGtkComponent, IComponent
+abstract class GtkWidgetComponent(Type) : IGtkWidgetComponent, IComponent
 {
 	private Type _widget;
 

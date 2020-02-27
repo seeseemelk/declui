@@ -64,6 +64,21 @@ class GtkBackend : ToolkitBackend
 	{
 		return new GtkButton;
 	}
+
+	override GtkMenuBar menubar()
+	{
+		return new GtkMenuBar;
+	}
+
+	override GtkMenu menu()
+	{
+		return new GtkMenu;
+	}
+
+	override GtkMenuButton menubutton()
+	{
+		return new GtkMenuButton;
+	}
 }
 
 shared static this()

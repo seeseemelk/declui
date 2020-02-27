@@ -97,7 +97,7 @@ private Tag parseTreeAsTag(const ParseTree tree)
 		foreach (child; descriptor.findChildTree("DUI.AttributeList").children)
 		{
 			auto value = child.children[1];
-			tag.attributes ~= Attribute(child.children[0].matches[0], value.matches[0], value.attributeTypeOf());
+			tag.attributes ~= Attribute(child.children[0].matches[0], value.stringValueOf(), value.attributeTypeOf());
 		}
 	}
 
@@ -127,6 +127,18 @@ private AttributeType attributeTypeOf(const ParseTree tree)
 			return AttributeType.boolean;
 		default:
 			assert(0, "Unknown ParseTree type " ~ tree.name);
+	}
+}
+
+private auto stringValueOf(const ParseTree tree)
+{
+	assert(tree.name == "DUI.Value", "Must pass in a value");
+	switch (tree.attributeTypeOf)
+	{
+		case AttributeType.string:
+			return tree.matches[0][1 .. $-1];
+		default:
+			return tree.matches[0];
 	}
 }
 
@@ -162,7 +174,7 @@ DUI:
 	# Value types
 	Identifier    <  identifier
 	Value         <  String / Callback / Integer / Bool
-	String        <~ :doublequote (!doublequote Char)* :doublequote
+	String        <~ ;doublequote (!doublequote Char)* ;doublequote
 	Char          <~
 	              / backslash (
 					/ doublequote
@@ -310,4 +322,11 @@ unittest
 	const dui = parseDUIScript!`parent { foo1#bar1 foo2#bar2 }`;
 	assert(dui.children[0].id == "bar1", "Did not parse id of child element");
 	assert(dui.children[1].id == "bar2", "Did not parse id of child element");
+}
+
+@("Empty string attributes are allowed")
+unittest
+{
+	const dui = parseDUIScript!`tag (attr="")`;
+	assert(dui["attr"].value == "");
 }

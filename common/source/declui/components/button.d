@@ -17,8 +17,8 @@ interface IButton : IComponent
     void text(string text);
 
 	/// Gets the callback that is executed when the button is pressed.
-	void delegate() click();
+	void delegate() onClick();
 
 	/// Sets the callback that is executed when the button is pressed.
-	void click(void delegate() callback);
+	void onClick(void delegate() callback);
 }

@@ -19,6 +19,15 @@ interface ToolkitBackend
 
 	/// Creates a button.
 	IButton button();
+
+	/// Creates a menubar.
+	IMenuBar menubar();
+
+	/// Creates a menu.
+	IMenu menu();
+
+	/// Creates a menu button.
+	IMenuButton menubutton();
 }
 
 private static ToolkitBackend _backend = null;
@@ -35,6 +44,7 @@ ToolkitBackend dui()
 
 version(unittest) private ToolkitBackend createBackend()
 {
+	import declui.testing : TestingBackend;
 	return new TestingBackend;
 }
 else private ToolkitBackend createBackend()

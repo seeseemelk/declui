@@ -12,7 +12,7 @@ import gtk.VBox;
 /**
 A GTK window.
 */
-class GtkWindow : GtkComponent!VBox, IWindow
+class GtkWindow : GtkWidgetComponent!VBox, IWindow
 {
 	private Application _application;
 	private Window _window;
