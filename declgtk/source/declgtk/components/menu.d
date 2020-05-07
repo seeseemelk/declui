@@ -6,14 +6,15 @@ import declui.components.menu;
 import gtk.Application : Application;
 import gio.Menu;
 import gio.MenuItem;
+import gio.SimpleAction;
 import std.uuid;
 
 /**
 A GTK menubar.
 */
-class GtkMenuBar : GtkComponent!Menu, IMenuBar
+class GtkMenuBar : GtkComponent!Menu, IMenuBar, IApplicationProxy
 {
-	private Application _application;
+	private IApplicationProxy _application;
 
 	override Menu createInstance()
 	{
@@ -23,28 +24,28 @@ class GtkMenuBar : GtkComponent!Menu, IMenuBar
 	override void add(IMenu menu)
 	{
 		auto gtkMenu = asGtk!GtkMenu(menu);
-		gtkMenu.menubar = this;
+		gtkMenu.application = this;
 		queue(menu => menu.appendSubmenu(gtkMenu.text, gtkMenu.getWidget));
 	}
 
-	void application(Application app)
+	void application(IApplicationProxy app)
 	{
 		_application = app;
 	}
 
-	Application application()
+	override Application application() pure @nogc @safe nothrow
 	{
-		return _application;
+		return _application.application();
 	}
 }
 
 /**
 A GTK menu.
 */
-class GtkMenu : GtkComponent!Menu, IMenu
+class GtkMenu : GtkComponent!Menu, IMenu, IApplicationProxy
 {
 	private string _text;
-	private GtkMenuBar _menubar;
+	private IApplicationProxy _application;
 
 	override Menu createInstance()
 	{
@@ -69,7 +70,7 @@ class GtkMenu : GtkComponent!Menu, IMenu
 	override void add(IMenuButton menubutton)
 	{
 		auto gtkMenuButton = menubutton.asGtk!GtkMenuButton;
-		gtkMenuButton.menubar = this;
+		gtkMenuButton.application = this;
 		queue((widget)
 		{
 			auto menuWidget = gtkMenuButton.getWidget();
@@ -78,24 +79,29 @@ class GtkMenu : GtkComponent!Menu, IMenu
 		});
 	}
 
-	void menubar(GtkMenuBar menubar)
+	void application(IApplicationProxy app)
 	{
-		_menubar = menubar;
+		_application = app;
+	}
+
+	override Application application() pure @nogc @safe nothrow
+	{
+		return _application.application();
 	}
 }
 
 /**
 A GTK menu button.
 */
-class GtkMenuButton : GtkComponent!MenuItem, IMenuButton
+class GtkMenuButton : GtkComponent!MenuItem, IMenuButton, IApplicationProxy
 {
 	private string _text;
 	private immutable string _uuid;
-	private GtkMenuBar _menubar;
+	private IApplicationProxy _application;
 
 	this()
 	{
-		_uuid = randomUUID().toString();
+		_uuid = "dlang.decluiApplication.quit"; // ~ randomUUID().toString();
 	}
 
 	override MenuItem createInstance()
@@ -111,6 +117,10 @@ class GtkMenuButton : GtkComponent!MenuItem, IMenuButton
 	override void text(string text)
 	{
 		_text = text;
+		queue((widget)
+		{
+			widget.setLabel(text);
+		});
 	}
 
 	override void delegate() onClick()
@@ -120,15 +130,26 @@ class GtkMenuButton : GtkComponent!MenuItem, IMenuButton
 
 	override void onClick(void delegate() callback)
 	{
-		queue((MenuItem widget)
+		queue((widget)
 		{
-			//Application application = _menubar.application();
-			//application.add
+			Application application = application();
+
+			auto action = new SimpleAction("dlang.decluiApplication.quit", null);
+			action.addOnActivate((variant, action)
+			{
+				callback();
+			});
+			application.addAction(action);
 		});
 	}
 
-	void menubar(GtkMenuBar menubar)
+	void application(IApplicationProxy app)
 	{
-		_menubar = menubar;
+		_application = app;
+	}
+
+	override Application application()
+	{
+		return _application.application;
 	}
 }

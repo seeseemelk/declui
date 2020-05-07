@@ -36,6 +36,12 @@ class GtkBackend : ToolkitBackend
 
 	override void run(string[] args, IWindow window)
 	{
+		version(linux)
+		{
+			import etc.linux.memoryerror : registerMemoryErrorHandler;
+			registerMemoryErrorHandler();
+		}
+
 		GtkWindow gtkWindow = cast(GtkWindow) window.getInternal();
 		assert(gtkWindow !is null, "window is not a GtkWindow");
 

@@ -5,8 +5,21 @@ module declgtk.util;
 
 import declgtk.components.component;
 import declui.components.component;
+import gtk.Application : Application;
 
 import std.conv;
+
+/**
+An interface that can be used to access the GTK application class.
+*/
+interface IApplicationProxy
+{
+	/**
+	Returns the GTK application instances.
+	*/
+	Application application() pure nothrow @safe @nogc
+	out (v; v !is null);
+}
 
 /**
 Casts an `IComponent` to a `GtkWidgetComponent`.

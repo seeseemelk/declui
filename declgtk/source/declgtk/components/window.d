@@ -13,7 +13,7 @@ import gtk.VBox;
 /**
 A GTK window.
 */
-class GtkWindow : GtkWidgetComponent!VBox, IWindow
+class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 {
 	private Application _application;
 	private Window _window;
@@ -53,16 +53,18 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow
 
 	override void add(IComponent child)
 	{
+		auto component = child.getInternal();
+		if (cast(GtkMenuBar) component !is null)
+			(cast(GtkMenuBar) component).application = this;
+
 		queue((widget)
 		{
-			auto component = child.getInternal();
 			auto widgetComponent = cast(IGtkWidgetComponent) component;
 			if (widgetComponent !is null)
 				widget.add(widgetComponent.getWidget());
 			else if (cast(GtkMenuBar) component !is null)
 			{
 				auto menubar = cast(GtkMenuBar) component;
-				menubar.application = _application;
 				_application.setMenubar(menubar.getWidget());
 			}
 		});
@@ -78,5 +80,10 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow
 			else
 				_window.hide();
 		});
+	}
+
+	override Application application()
+	{
+		return _application;
 	}
 }
