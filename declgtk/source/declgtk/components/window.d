@@ -1,6 +1,7 @@
 module declgtk.components.window;
 
 import declgtk.components.component;
+import declgtk.components.menu : GtkMenuBar;
 import declgtk.util;
 import declui.components.component;
 import declui.components.window : IWindow;
@@ -52,7 +53,19 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow
 
 	override void add(IComponent child)
 	{
-		queue(widget => widget.add(child.asGtk.getWidget()));
+		queue((widget)
+		{
+			auto component = child.getInternal();
+			auto widgetComponent = cast(IGtkWidgetComponent) component;
+			if (widgetComponent !is null)
+				widget.add(widgetComponent.getWidget());
+			else if (cast(GtkMenuBar) component !is null)
+			{
+				auto menubar = cast(GtkMenuBar) component;
+				menubar.application = _application;
+				_application.setMenubar(menubar.getWidget());
+			}
+		});
 	}
 
 	override void visible(bool visible)

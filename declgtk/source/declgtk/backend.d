@@ -4,7 +4,6 @@ import declgtk.components;
 import declgtk.queue;
 import declui.backend;
 import declui.components.window;
-import gio.Application : GioApplication = Application;
 import gtk.Application : Application, GApplicationFlags;
 import gtk.ApplicationWindow : ApplicationWindow;
 
