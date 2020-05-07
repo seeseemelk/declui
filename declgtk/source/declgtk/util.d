@@ -9,7 +9,7 @@ import declui.components.component;
 import std.conv;
 
 /**
-Casts an `IComponent` to a `GtkComponent`.
+Casts an `IComponent` to a `GtkWidgetComponent`.
 If the component itself cannot be cast, it will try to cast it's internal component.
 Note that this method should only ever be executed from the GTK main thread.
 */

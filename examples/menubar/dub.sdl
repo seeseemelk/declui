@@ -1,2 +1,2 @@
 name "app"
-dependency "declui" version="*"
+dependency "declui" path="../.."
