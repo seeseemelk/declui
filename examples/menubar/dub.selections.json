@@ -3,6 +3,7 @@
 	"versions": {
 		"declui": {"path":"../.."},
 		"gtk-d": "3.9.0",
-		"pegged": "0.4.4"
+		"pegged": "0.4.4",
+		"silly": "1.0.2"
 	}
 }

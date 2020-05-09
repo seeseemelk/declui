@@ -25,7 +25,7 @@ bool isGTKStarted()
 /**
 Creates GTK components.
 */
-class GtkBackend : ToolkitBackend, IApplicationProxy
+class GtkBackend : ToolkitBackend, ToolkitWidgets, IApplicationProxy
 {
 	private Application _application;
 	private GioApplication _gioApplication;
@@ -60,6 +60,11 @@ class GtkBackend : ToolkitBackend, IApplicationProxy
 			executeGtkQueue();
 		});
 		_application.run(args);
+	}
+
+	override ToolkitWidgets getWidgets()
+	{
+		return this;
 	}
 
 	override GtkWindow window()

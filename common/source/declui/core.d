@@ -29,7 +29,7 @@ import std.conv;
 
 private template symbolOfTag(Tag tag)
 {
-	alias symbolOfTag = __traits(getMember, dui, tag.name);
+	alias symbolOfTag = __traits(getMember, dui().getWidgets(), tag.name);
 }
 
 private template typeOfTag(Tag tag)
@@ -40,13 +40,13 @@ private template typeOfTag(Tag tag)
 /**
 This class will create a component from a Tag tree.
 */
-class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend, tag.name))
+class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitWidgets, tag.name))
 {
 	/*
 	These are all compile-time constructs that will automatically create the
 	class according to the DUI file passed in as a type argument.
 	*/
-	alias Type = ReturnType!(__traits(getMember, dui(), tag.name));
+	alias Type = ReturnType!(__traits(getMember, ToolkitWidgets, tag.name));
 
 	private Type _instance;
 
@@ -90,7 +90,7 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitBackend
     */
 	this(EventHandler)(EventHandler eventHandler)
 	{
-		_instance = __traits(getMember, dui, tag.name)();
+		_instance = __traits(getMember, dui().getWidgets(), tag.name)();
         static foreach (attribute; tag.attributes)
         {
 			static if (attribute.type == AttributeType.string)

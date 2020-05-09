@@ -7,6 +7,10 @@ targetType "library"
 
 dependency "pegged" version="~>0.4.4"
 
-buildType "unittest" {
-        dependency "silly" version="~>1.0.1"
+configuration "library" {
+
+}
+
+configuration "unittest" {
+    dependency "silly" version="~>1.0.1"
 }

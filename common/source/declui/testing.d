@@ -13,14 +13,19 @@ import std.typecons;
 /**
 A backend that automatically stubs out every instantiation method.
 */
-class TestingBackend : ToolkitBackend
+class TestingBackend : ToolkitBackend, ToolkitWidgets
 {
 	override void run(string[] args, IWindow window)
 	{
 		assert(0, "Run is not supported during testing");
 	}
 
-	static foreach (member; __traits(derivedMembers, ToolkitBackend))
+	override ToolkitWidgets getWidgets()
+	{
+		return this;
+	}
+
+	static foreach (member; __traits(derivedMembers, ToolkitWidgets))
 	{
 		static if (member != "run")
 		{
@@ -30,9 +35,9 @@ class TestingBackend : ToolkitBackend
 					return createMockInstance!(%s);
 				}
 				`(
-				fullyQualifiedName!(ReturnType!(__traits(getMember, ToolkitBackend, member))),
+				fullyQualifiedName!(ReturnType!(__traits(getMember, ToolkitWidgets, member))),
 				member,
-				fullyQualifiedName!(ReturnType!(__traits(getMember, ToolkitBackend, member))))
+				fullyQualifiedName!(ReturnType!(__traits(getMember, ToolkitWidgets, member))))
 			);
 		}
 	}

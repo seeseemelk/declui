@@ -11,6 +11,14 @@ interface ToolkitBackend
 	/// Enters the main event loop for the backend.
 	void run(string[] args, IWindow window);
 
+	ToolkitWidgets getWidgets();
+}
+
+/**
+An interface that can create widgets for a backend.
+*/
+interface ToolkitWidgets
+{
 	/// Creates a window.
 	IWindow window();
 
