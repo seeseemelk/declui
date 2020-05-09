@@ -1,6 +1,8 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"gtk-d": "3.9.0"
+		"gtk-d": "3.9.0",
+		"pegged": "0.4.4",
+		"silly": "1.0.2"
 	}
 }

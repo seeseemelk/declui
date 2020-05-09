@@ -36,6 +36,9 @@ interface ToolkitWidgets
 
 	/// Creates a menu button.
 	IMenuButton menubutton();
+
+	/// Creates a text area.
+	ITextArea textarea();
 }
 
 private static ToolkitBackend _backend = null;

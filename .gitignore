@@ -7,7 +7,7 @@ declui.dylib
 declui.dll
 declui.a
 declui.lib
-declui-test-*
+*-test-*
 *.exe
 *.o
 *.obj

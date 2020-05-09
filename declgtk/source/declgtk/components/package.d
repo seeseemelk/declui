@@ -7,4 +7,5 @@ public
 	import declgtk.components.label;
 	import declgtk.components.menu;
 	import declgtk.components.window;
+	import declgtk.components.textarea;
 }

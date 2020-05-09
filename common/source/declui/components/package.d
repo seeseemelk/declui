@@ -11,7 +11,9 @@ public
 	// D, E, F, G, H, I, J, K
 	import declui.components.label;
 	import declui.components.menu;
-	// N, O, P, Q, R, S, T, U, V
+	// N, O, P, Q, R, S
+	import declui.components.textarea;
+	// U, V
 	import declui.components.window;
 	// X, Y, Z
 }

@@ -97,6 +97,11 @@ class GtkBackend : ToolkitBackend, ToolkitWidgets, IApplicationProxy
 		return new GtkMenuButton;
 	}
 
+	override GtkTextArea textarea()
+	{
+		return new GtkTextArea;
+	}
+
 	override Application application()
 	{
 		return _application;
