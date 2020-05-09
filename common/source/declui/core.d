@@ -109,6 +109,8 @@ class ComponentFromTag(Tag tag) : ReturnType!(__traits(getMember, ToolkitWidgets
         {
 			static foreach (child; tag.children)
 			{
+				static assert(__traits(hasMember, ToolkitWidgets, child.name),
+					"There is no tag with the name '" ~ child.name ~ "'");
 				registerChild!(child)(new ComponentFromTag!(child)(eventHandler));
 			}
         }
