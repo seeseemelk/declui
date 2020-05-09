@@ -9,13 +9,14 @@ import gtk.Application : Application;
 import gtk.Window;
 import gtk.ApplicationWindow : ApplicationWindow;
 import gtk.VBox;
+import gio.Application : GioApplication = Application;
 
 /**
 A GTK window.
 */
 class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 {
-	private Application _application;
+	private IApplicationProxy _application;
 	private Window _window;
 	private string _title = "Untitled Window";
 
@@ -24,7 +25,7 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 		if (_application is null)
 			return new Window(_title);
 		else
-			return new ApplicationWindow(_application);
+			return new ApplicationWindow(_application.application());
 	}
 
 	override VBox createInstance()
@@ -35,7 +36,7 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 		return vbox;
 	}
 
-	void setApplication(Application application)
+	void setApplication(IApplicationProxy application)
 	{
 		_application = application;
 	}
@@ -65,7 +66,7 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 			else if (cast(GtkMenuBar) component !is null)
 			{
 				auto menubar = cast(GtkMenuBar) component;
-				_application.setMenubar(menubar.getWidget());
+				_application.application().setMenubar(menubar.getWidget());
 			}
 		});
 	}
@@ -84,6 +85,11 @@ class GtkWindow : GtkWidgetComponent!VBox, IWindow, IApplicationProxy
 
 	override Application application()
 	{
-		return _application;
+		return _application.application();
+	}
+
+	override GioApplication gioApplication()
+	{
+		return _application.gioApplication();
 	}
 }

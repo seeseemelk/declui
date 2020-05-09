@@ -2,10 +2,12 @@ module declgtk.backend;
 
 import declgtk.components;
 import declgtk.queue;
+import declgtk.util;
 import declui.backend;
 import declui.components.window;
 import gtk.Application : Application, GApplicationFlags;
 import gtk.ApplicationWindow : ApplicationWindow;
+import gio.Application : GioApplication = Application;
 
 import std.exception;
 
@@ -23,9 +25,10 @@ bool isGTKStarted()
 /**
 Creates GTK components.
 */
-class GtkBackend : ToolkitBackend
+class GtkBackend : ToolkitBackend, IApplicationProxy
 {
 	private Application _application;
+	private GioApplication _gioApplication;
 	private void delegate()[] callbacks;
 
 	/// Queues a callback to be run on the GTK event loop.
@@ -38,17 +41,21 @@ class GtkBackend : ToolkitBackend
 	{
 		version(linux)
 		{
-			import etc.linux.memoryerror : registerMemoryErrorHandler;
-			registerMemoryErrorHandler();
+			version (DMD)
+			{
+				import etc.linux.memoryerror : registerMemoryErrorHandler;
+				registerMemoryErrorHandler();
+			}
 		}
 
 		GtkWindow gtkWindow = cast(GtkWindow) window.getInternal();
 		assert(gtkWindow !is null, "window is not a GtkWindow");
 
-		_application = new Application("dlang.decluiApplication", GApplicationFlags.FLAGS_NONE);
+		_application = new Application("dlang.declui.app", GApplicationFlags.FLAGS_NONE);
 		_application.addOnActivate((gioApp)
 		{
-			gtkWindow.setApplication(_application);
+			_gioApplication = gioApp;
+			gtkWindow.setApplication(this);
 			gtkWindow.visible = true;
 			executeGtkQueue();
 		});
@@ -83,6 +90,16 @@ class GtkBackend : ToolkitBackend
 	override GtkMenuButton menubutton()
 	{
 		return new GtkMenuButton;
+	}
+
+	override Application application()
+	{
+		return _application;
+	}
+
+	override GioApplication gioApplication()
+	{
+		return _gioApplication;
 	}
 }
 

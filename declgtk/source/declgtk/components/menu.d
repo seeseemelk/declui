@@ -2,11 +2,13 @@ module declgtk.components.menu;
 
 import declgtk.components.component;
 import declgtk.util;
+import declgtk.queue;
 import declui.components.menu;
 import gtk.Application : Application;
 import gio.Menu;
 import gio.MenuItem;
 import gio.SimpleAction;
+import gio.Application : GioApplication = Application;
 import std.uuid;
 
 /**
@@ -36,6 +38,11 @@ class GtkMenuBar : GtkComponent!Menu, IMenuBar, IApplicationProxy
 	override Application application() pure @nogc @safe nothrow
 	{
 		return _application.application();
+	}
+
+	override GioApplication gioApplication()
+	{
+		return _application.gioApplication;
 	}
 }
 
@@ -88,6 +95,11 @@ class GtkMenu : GtkComponent!Menu, IMenu, IApplicationProxy
 	{
 		return _application.application();
 	}
+
+	override GioApplication gioApplication()
+	{
+		return _application.gioApplication;
+	}
 }
 
 /**
@@ -101,12 +113,12 @@ class GtkMenuButton : GtkComponent!MenuItem, IMenuButton, IApplicationProxy
 
 	this()
 	{
-		_uuid = "dlang.decluiApplication.quit"; // ~ randomUUID().toString();
+		_uuid = randomUUID().toString();
 	}
 
 	override MenuItem createInstance()
 	{
-		return new MenuItem("(unnamed menubutton)", _uuid);
+		return new MenuItem("(unnamed menubutton)", "app." ~ _uuid);
 	}
 
 	override string text()
@@ -130,16 +142,16 @@ class GtkMenuButton : GtkComponent!MenuItem, IMenuButton, IApplicationProxy
 
 	override void onClick(void delegate() callback)
 	{
-		queue((widget)
+		queue((MenuItem widget)
 		{
-			Application application = application();
-
-			auto action = new SimpleAction("dlang.decluiApplication.quit", null);
+			MenuItem item = widget;
+			auto action = new SimpleAction(_uuid, null);
 			action.addOnActivate((variant, action)
 			{
 				callback();
+				executeGtkQueue();
 			});
-			application.addAction(action);
+			gioApplication.addAction(action);
 		});
 	}
 
@@ -151,5 +163,10 @@ class GtkMenuButton : GtkComponent!MenuItem, IMenuButton, IApplicationProxy
 	override Application application()
 	{
 		return _application.application;
+	}
+
+	override GioApplication gioApplication()
+	{
+		return _application.gioApplication;
 	}
 }

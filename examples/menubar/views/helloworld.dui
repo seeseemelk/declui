@@ -1,8 +1,8 @@
 window (title="Menu Example") {
 	menubar {
-		menu (text="File") {
-			menubutton (text="Quit", onClick=pressed)
+		menu (text="Menu") {
+			menubutton (text="Click Me", onClick=pressedMenuButton)
 		}
 	}
-	label#label (text="")
+	label#label (text="Did not press the button")
 }

@@ -6,6 +6,7 @@ module declgtk.util;
 import declgtk.components.component;
 import declui.components.component;
 import gtk.Application : Application;
+import gio.Application : GioApplication = Application;
 
 import std.conv;
 
@@ -15,10 +16,14 @@ An interface that can be used to access the GTK application class.
 interface IApplicationProxy
 {
 	/**
-	Returns the GTK application instances.
+	Returns the GTK application instance.
 	*/
-	Application application() pure nothrow @safe @nogc
-	out (v; v !is null);
+	Application application() pure nothrow @safe @nogc;
+
+	/**
+	Returns the GIO Application instance.
+	*/
+	GioApplication gioApplication() pure nothrow @safe @nogc;
 }
 
 /**

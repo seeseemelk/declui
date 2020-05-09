@@ -2,12 +2,14 @@ module app;
 
 import declui;
 import std.conv;
+import std.stdio;
 
 private class MyWindow : Component!"helloworld"
 {
-	override void pressed()
+	override void pressedMenuButton()
 	{
 		byId.label.text = "Pressed the menu button";
+		writeln("Pressed a button");
 	}
 }
 
